@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="D:\h5\android-lrc-view-oyp-master\app\src\main\assets"><file name="test.lrc" path="D:\h5\android-lrc-view-oyp-master\app\src\main\assets\test.lrc"/><file name="test.mp3" path="D:\h5\android-lrc-view-oyp-master\app\src\main\assets\test.mp3"/></source></dataSet><dataSet config="debug"><source path="D:\h5\android-lrc-view-oyp-master\app\src\debug\assets"/></dataSet></merger>
