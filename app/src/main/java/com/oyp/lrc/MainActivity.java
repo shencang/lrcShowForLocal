@@ -1,12 +1,17 @@
 package com.oyp.lrc;
 
 import android.app.Activity;
+import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.oyp.lrc.utils.FileUtils;
+import com.oyp.lrc.utils.TimeMethod;
 import com.oyp.lrc.view.ILrcBuilder;
 import com.oyp.lrc.view.ILrcView;
 import com.oyp.lrc.view.ILrcViewListener;
@@ -17,8 +22,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,6 +35,7 @@ public class MainActivity extends Activity {
     public String lrcPath="/sdcard/test.lrc";
     public String musicPath="/sdcard/小苹果.mp3";
     public  int[] contentNum;
+    private String savefilePath = "/sdcard/lrc";//歌词文件存放位置
 	public final static String TAG = "MainActivity";
 
     //自定义LrcView，用来展示歌词
@@ -55,16 +63,8 @@ public class MainActivity extends Activity {
         //解析歌词返回LrcRow集合
         List<LrcRow> rows = builder.getLrcRows(lrc);
 
-        contentNum =new int[rows.size()];
-        for(int i=0;i<rows.size();i++){
-            contentNum[i]=rows.get(i).content.length();
-
-
-        }
-        for(int i=0;i<rows.size();i++){
-            Log.d(TAG,Integer.toString(contentNum[i])+"  "+rows.get(i).strTime+"\n");
-
-        }
+        getContentNum(rows);
+        saveLrc(rows,getContent(rows));
 
 
         //将得到的歌词集合传给mLrcView用来展示
@@ -190,6 +190,79 @@ public class MainActivity extends Activity {
             mTimer = null;
         }
     }
+    /**
+     * 返回记录歌词的每句字数集合
+     */
+    public int[] getContentNum(List<LrcRow> rows){
+        contentNum =new int[rows.size()];
+        for(int i=0;i<rows.size();i++){
+            contentNum[i]=rows.get(i).content.length();
+
+
+        }
+        for(int i=0;i<rows.size();i++){
+            Log.d(TAG,Integer.toString(contentNum[i])+"  "+rows.get(i).strTime+"\n");
+
+        }
+        return   contentNum;
+
+    }
+    /**
+     * 返回记录歌词的每句歌词
+     */
+    public String[] getContent(List<LrcRow> rows){
+        String[] content =new String[rows.size()];
+        for(int i=0;i<rows.size();i++){
+            content[i]=rows.get(i).content;
+
+
+
+        }
+        return   content;
+
+    }
+    /**
+     *  保存接收的歌词文件
+     */
+    private void saveLrc(List<LrcRow> rows,String[] newLrc){
+        String mMinute1 = TimeMethod.getTime();
+        String recFilePath = FileUtils.recAudioPath(savefilePath);
+        String name= mMinute1+".lrc";
+
+        for (int n=0;n<rows.size();n++){
+            newLrc[n]=rows.get(n).strTime+newLrc[n];
+        }
+
+
+        //http://180.76.117.51:8000/?char=%E5%8D%8E%E9%A3%9E&length=3%2C12%2C6%2C7%2C9%2C15%2C8%2C15%2C4%2C14%2C14
+try {
+
+        //如果手机已插入sd卡,且app具有读写sd卡的权限
+        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            name = Environment.getExternalStorageDirectory().getCanonicalPath() + "/" + name;
+
+            //这里就不要用openFileOutput了,那个是往手机内存中写数据的
+            FileOutputStream output = new FileOutputStream(name);
+            for (int i=0;i<newLrc.length;i++){
+                output.write((newLrc[i]+"\n").getBytes());
+            }
+
+            //将String字符串以字节流的形式写入到输出流中
+            output.close();
+            //关闭输出流
+        } //else Toast.makeText(cont, "SD卡不存在或者不可读写", Toast.LENGTH_SHORT).show();
+}catch (Exception S){
+
+}
+
+       // return lrcFile;
+    }
+
+
+
+
+
+
 
     /**
      * 展示歌曲的定时任务
@@ -208,4 +281,6 @@ public class MainActivity extends Activity {
 
         }
     };
+
+
 }
