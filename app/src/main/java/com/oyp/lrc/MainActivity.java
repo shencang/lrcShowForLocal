@@ -18,17 +18,28 @@ import com.oyp.lrc.view.ILrcViewListener;
 import com.oyp.lrc.view.impl.DefaultLrcBuilder;
 import com.oyp.lrc.view.impl.LrcRow;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends Activity {
 
@@ -257,7 +268,51 @@ try {
 
        // return lrcFile;
     }
+    /**
+     *HttpURLConnection
+     * 从服务器获取歌词
+     */
+    private void sendRequestWithOKHttp(final String importWord,final String content){
+        new Thread(new Runnable() {
+           // @Override
+            public void run() {
+                try {
+                    OkHttpClient client = new OkHttpClient();
+                    String strWord= java.net.URLEncoder.encode(importWord,"UTF-8");
+                    String strCon= java.net.URLEncoder.encode(content,"UTF-8");
 
+//                    RequestBody requestBody= new FormBody.Builder()
+//                            .add("char","试试")
+//                            .add("longth","%5B1%2C2%2C3%2C4%2C5%2C6%2C7%2C8%2C9%2C10%5D")
+//                            .build();
+
+                    Request request = new Request.Builder()
+                            .url("http://180.76.117.51:8000/?char="+strWord+"&length="+strCon)
+                            // .post(requestBody)
+                            .build();
+                    Response response = client.newCall(request).execute();
+                    if (!response.isSuccessful())
+                        throw new IOException("传输错误 "+ response);
+
+
+                    String responseData = response.body().string();
+                    showResponse(responseData);
+
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+    private void showResponse(final String response){
+        runOnUiThread(new Runnable() {
+         //   @Override
+            public void run() {
+                //responseText.setText(response);
+            }
+        });
+    }
 
 
 
